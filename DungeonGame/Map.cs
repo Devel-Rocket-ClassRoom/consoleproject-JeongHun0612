@@ -102,7 +102,7 @@ namespace DungeonGame
 
             // 테스트용 푸시
 
-            //ㄴㅁㅇㅁㄴ
+            // SSH 테스트 푸시
         }
 
         public char GetTile(int row, int col)
