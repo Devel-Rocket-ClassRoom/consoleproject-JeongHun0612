@@ -32,8 +32,7 @@ namespace DungeonGame
 
         public virtual void MoveTo(Pos pos)
         {
-            _pos.row = pos.row;
-            _pos.col = pos.col;
+            _pos = pos;
         }
 
         public virtual void TakeDemage(int demage)

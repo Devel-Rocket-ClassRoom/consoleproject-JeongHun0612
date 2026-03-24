@@ -18,8 +18,8 @@ namespace DungeonGame
 
         public Pos Move(Pos playerPos)
         {
-            int row = _pos.row;
-            int col = _pos.col;
+            int row = _pos.Row;
+            int col = _pos.Col;
 
             Pos nextPos;
 
@@ -30,19 +30,19 @@ namespace DungeonGame
             }
             else
             {
-                int diffRow = Math.Abs(playerPos.row - row);
-                int diffCol = Math.Abs(playerPos.col - col);
+                int diffRow = Math.Abs(playerPos.Row - row);
+                int diffCol = Math.Abs(playerPos.Col - col);
 
                 if (diffRow > diffCol)
                 {
-                    if (playerPos.row > row)
+                    if (playerPos.Row > row)
                         nextPos = new Pos(row + 1, col);
                     else
                         nextPos = new Pos(row - 1, col);
                 }
                 else
                 {
-                    if (playerPos.col > col)
+                    if (playerPos.Col > col)
                         nextPos = new Pos(row, col + 1);
                     else
                         nextPos = new Pos(row, col - 1);
@@ -58,20 +58,20 @@ namespace DungeonGame
 
         public override void SetStartPos(Map map)
         {
-            Random rnd = new Random();
+            //Random rnd = new Random();
 
-            int rndRow, rndCol;
+            //int rndRow, rndCol;
 
-            do
-            {
-                rndRow = rnd.Next(2, map.Row - 1);
-                rndCol = rnd.Next(1, map.Col - 1);
+            //do
+            //{
+            //    rndRow = rnd.Next(2, map.Row - 1);
+            //    rndCol = rnd.Next(1, map.Col - 1);
 
-            } while (map.GetTile(rndRow, rndCol) != Map.C_FLOOR);
+            //} while (map.GetTile(rndRow, rndCol) != Map.C_FLOOR);
 
-            _pos.row = rndRow;
-            _pos.col = rndCol;
-            map.SetTile(rndRow, rndCol, Map.C_ENEMY);
+            //_pos.row = rndRow;
+            //_pos.col = rndCol;
+            //map.SetTile(rndRow, rndCol, Map.C_ENEMY);
         }
     }
 }

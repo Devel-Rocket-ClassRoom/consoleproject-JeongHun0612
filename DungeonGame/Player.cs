@@ -19,8 +19,8 @@ namespace DungeonGame
         {
             ConsoleKeyInfo key = Console.ReadKey();
 
-            int row = _pos.row;
-            int col = _pos.col;
+            int row = _pos.Row;
+            int col = _pos.Col;
 
             switch (key.Key)
             {
@@ -41,22 +41,43 @@ namespace DungeonGame
             }
         }
 
+        public void SetStartPos(Room room)
+        {
+            //switch (dir)
+            //{
+            //    case Direction.Left:
+            //        return new Pos(_height / 2, 0);
+            //    case Direction.Right:
+            //        return new Pos(_height / 2, _width - 1);
+            //    case Direction.Up:
+            //        return new Pos(0, _width / 2);
+            //    default:
+            //        return new Pos(_height - 1, _width / 2);
+            //}
+
+            int halfHeight = room.Height / 2;
+            int halfWidth = room.Width / 2;
+
+            _pos = new Pos(halfHeight, halfWidth);
+            room.SetTile(TileType.Player, halfHeight, halfWidth);
+        }
+
         public override void SetStartPos(Map map)
         {
-            Random rnd = new Random();
+            //Random rnd = new Random();
 
-            int rndRow, rndCol;
+            //int rndRow, rndCol;
 
-            do
-            {
-                rndRow = 1;
-                rndCol = rnd.Next(1, map.Col - 1);
+            //do
+            //{
+            //    rndRow = 1;
+            //    rndCol = rnd.Next(1, map.Col - 1);
 
-            } while (map.GetTile(rndRow, rndCol) != Map.C_FLOOR);
+            //} while (map.GetTile(rndRow, rndCol) != Map.C_FLOOR);
 
-            _pos.row = rndRow;
-            _pos.col = rndCol;
-            map.SetTile(rndRow, rndCol, Map.C_PLAYER);
+            //_pos.row = rndRow;
+            //_pos.col = rndCol;
+            //map.SetTile(rndRow, rndCol, Map.C_PLAYER);
         }
     }
 }
