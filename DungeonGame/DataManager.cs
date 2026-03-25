@@ -29,23 +29,23 @@ namespace DungeonGame
             }
         }
 
-        public static T LoadData<T>(string fileName)
+        public static T? LoadData<T>(string fileName)
         {
             string filePath = GetFilePath(fileName);
-
-            T? data = default;
 
             try
             {
                 string json = File.ReadAllText(filePath);
-                data = JsonSerializer.Deserialize<T>(json);
+                Console.WriteLine("JSON 데이터 \n" + json);
+
+                return JsonSerializer.Deserialize<T>(json);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
 
-            return data;
+            return default;
         }
 
         private static string GetFilePath(string fileName)
