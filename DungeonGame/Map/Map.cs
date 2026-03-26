@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DungeonGame.Data;
+using System;
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,12 +24,12 @@ namespace DungeonGame
 
         public Room CurrentRoom { get; private set; }
 
-        public void GenerateRandomRoom(int roomCount)
+        public void GenerateRandomRoom(MapData mapData)
         {
             Random random = new Random();
 
             // 최소 방 갯수는 MIN_ROOMCOUNT개 이상
-            roomCount = Math.Max(roomCount, MIN_ROOMCOUNT);
+            int roomCount = Math.Max(mapData.RoomCount, MIN_ROOMCOUNT);
 
             // 룸 정보 초기화
             _rooms.Clear();

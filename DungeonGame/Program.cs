@@ -13,10 +13,8 @@ namespace DungeonGame
     {
         static void Main(string[] args)
         {
-            Game game = new Game();
-            game.Initialize();
-
-            game.Update();
+            GameManager gameManager = GameManager.Instance;
+            gameManager.StartGame();
         }
     }
 }

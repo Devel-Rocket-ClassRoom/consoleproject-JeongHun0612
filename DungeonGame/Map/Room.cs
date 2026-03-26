@@ -1,8 +1,12 @@
-﻿using System;
+﻿using DungeonGame.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Http.Headers;
+using System.Numerics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DungeonGame
@@ -10,6 +14,11 @@ namespace DungeonGame
     public enum Direction
     {
         Left, Right, Up, Down
+    }
+
+    public enum RoomType
+    {
+        Normal, Boss
     }
 
     public readonly struct RoomGridPos
@@ -60,19 +69,19 @@ namespace DungeonGame
         public int Width => _width;
         public int Height => _height;
         public RoomGridPos GridPos => _gridPos;
-
         public int DoorCount => _doorDicts.Count;
+        public IReadOnlyList<Enemy> Enemies => _enemies;
 
-
-        public Room(int id, int width, int height, RoomGridPos gridPos)
+        public Room(int id, int width, int height, RoomGridPos gridPos, MapData mapData)
         {
             _roomId = id;
-            _width = Math.Max(width, 10);
-            _height = Math.Max(height, 10);
+            _width = width;
+            _height = height;
             _gridPos = gridPos;
 
             _tiles = new Tile[height, width];
             CreateRoom(height, width);
+            SpawnEnemies(mapData);
         }
 
         public void SetTile(TileType type, int row, int col)
@@ -105,6 +114,39 @@ namespace DungeonGame
         public Door GetDoor(Pos pos)
         {
             return _doorDicts.Values.FirstOrDefault(door => door.Pos.Row == pos.Row && door.Pos.Col == pos.Col);
+        }
+
+        public void RemoveEnemy(Enemy enemy)
+        {
+            _enemies.Remove(enemy);
+        }
+
+        public bool CanMoveTo(Pos pos, Enemy self)
+        {
+            if (!IsInBound(pos))
+                return false;
+
+            if (!GetTile(pos.Row, pos.Col).IsWalkable())
+                return false;
+
+            if (HasEnemyAt(pos, self))
+                return false;
+
+            return true;
+        }
+
+        public bool HasEnemyAt(Pos pos, Enemy self)
+        {
+            foreach (var enemy in _enemies)
+            {
+                if (ReferenceEquals(enemy, self))
+                    continue;
+
+                if (enemy.Pos.IsEqual(pos))
+                    return true;
+            }
+
+            return false;
         }
 
         public bool IsInBound(Pos pos)
@@ -157,18 +199,42 @@ namespace DungeonGame
             }
         }
 
-        public void PrintRoom()
+        public void PrintRoom(RenderManager screenManager, Player player)
         {
-            Console.SetCursorPosition(0, 0);
+            Rect contentRect = screenManager.GetPanel(PanelType.Map).GetContentRect();
 
-            for (int r = 0; r < _height; r++)
+            int offsetX = (contentRect.Width - _width) / 2;
+            int offsetY = (contentRect.Height - _height) / 2;
+
+            if (offsetX < 0) offsetX = 0;
+            if (offsetY < 0) offsetY = 0;
+
+            // 타일 출력
+            for (int row = 0; row < _height; row++)
             {
-                for (int c = 0; c < _width; c++)
+                for (int col = 0; col < _width; col++)
                 {
-                    Console.Write(_tiles[r, c].GetSymbol());
+                    char symbol = _tiles[row, col].GetSymbol();
+                    screenManager.DrawChar(PanelType.Map, offsetX + col, offsetY + row, symbol);
                 }
-                Console.WriteLine();
             }
+
+            // 몬스터 출력
+            foreach (var enemy in _enemies)
+            {
+                screenManager.DrawChar(
+                   PanelType.Map,
+                   offsetX + enemy.Pos.Col,
+                   offsetY + enemy.Pos.Row,
+                   enemy.Symbol);
+            }
+
+            // 플레이어 출력
+            screenManager.DrawChar(
+                PanelType.Map,
+                offsetX + player.Pos.Col,
+                offsetY + player.Pos.Row,
+                player.Symbol);
         }
 
         private void CreateRoom(int row, int col)
@@ -188,6 +254,41 @@ namespace DungeonGame
                     }
                 }
             }
+        }
+
+        private void SpawnEnemies(MapData mapData)
+        {
+            if (mapData == null)
+                return;
+
+            if (mapData.SpawnEnemyTypes == null || mapData.SpawnEnemyTypes.Count == 0)
+                return;
+
+            Random random = new Random();
+
+            int enemyCount = random.Next(mapData.EnemyCountMinInRoom, mapData.EnemyCountMaxInRoom + 1);
+
+            //for (int i = 0; i < enemyCount; i++)
+            //{
+            //    Pos spawnPos = FindEmptyPosition();
+            //    if (!spawnPos.IsValid())
+            //        break;
+
+            //    EnemyType randomType = mapData.SpawnEnemyTypes[
+            //        _random.Next(mapData.SpawnEnemyTypes.Count)];
+
+            //    Enemy enemy = CreateEnemy(randomType);
+            //    enemy.MoveTo(spawnPos);
+            //}
+    
+            //if (_enemies == null)
+            //    _enemies = new List<Enemy>();
+
+            //Random rand = new Random();
+            //int rndEnemyCount = rand.Next(2, 5);
+            //EnemyType rndType = (EnemyType)rand.Next(0, Enum.GetValues<EnemyType>().Length);
+
+            //SpawnEnemy(rndType);
         }
     }
 }
