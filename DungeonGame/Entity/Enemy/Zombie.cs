@@ -25,7 +25,7 @@ namespace DungeonGame
             if (!nextPos.IsValid() || !room.IsInBound(nextPos))
                 return;
 
-            if (!room.GetTile(nextPos.Row, nextPos.Col).IsWalkable())
+            if (!room.GetTile(nextPos.Row, nextPos.Col).IsWalkable() || room.HasEnemyAt(nextPos, this))
             {
                 _dir *= -1;
                 nextPos = GetNextPos();

@@ -11,6 +11,10 @@ namespace DungeonGame
 {
     internal class Player : Entity
     {
+        public bool HasKey { get; set; }
+
+        private RenderManager _renderManager;
+
         public Player(string name, int demage, int maxHp) : base(name, 'P', demage, maxHp)
         {
         }
@@ -18,6 +22,59 @@ namespace DungeonGame
         public void Reset()
         {
             _hp = _maxHp;
+            HasKey = false;
+        }
+
+        public void Action(Room currentRoom)
+        {
+            if (_renderManager == null)
+                _renderManager = GameManager.Instance.RenderManager;
+
+            Pos nextPos = Move();
+
+            if (!nextPos.IsValid() || !currentRoom.IsInBound(nextPos))
+            {
+                _renderManager.DrawText(PanelType.Log, 0, 0, $"해당 위치로는 이동할 수 없습니다.");
+                return;
+            }
+
+            // 다음 위치에 몬스터가 존재하면 공격
+            foreach (var enemy in currentRoom.Enemies)
+            {
+                if (nextPos.IsEqual(enemy.Pos))
+                {
+                    enemy.TakeDemage(_demage);
+
+                    if (enemy.IsDead)
+                    {
+                        _renderManager.ClearPanel(PanelType.Status);
+                        _renderManager.DrawText(PanelType.Log, 0, 0, $"{enemy.Name}을(를) 제거 하였습니다.");
+                        currentRoom.RemoveEnemy(enemy);
+                    }
+
+                    return;
+                }
+            }
+
+            //Tile tile = currentRoom.GetTile(nextPos.Row, nextPos.Col);
+            //if (tile.IsWalkable())
+            //{
+            //    // 플레이어 위치 이동
+            //    _player.MoveTo(nextPos);
+
+            //    _renderManager.ClearPanel(PanelType.Log);
+            //    _renderManager.DrawText(PanelType.Log, 0, 0, $"{_player.Name} 이동 - [{_player.Pos.Row}, {_player.Pos.Col}]");
+            //}
+            //else if (tile.Type == TileType.Door)
+            //{
+            //    Door door = _map.CurrentRoom.GetDoor(nextPos);
+            //    _map.ChangeRoom(door.TargetRoomId);
+
+            //    _player.MoveTo(door.TargetSpawnPos);
+
+            //    _renderManager.ClearPanel(PanelType.Status);
+            //    _renderManager.ClearPanel(PanelType.Map);
+            //}
         }
 
         public Pos Move()

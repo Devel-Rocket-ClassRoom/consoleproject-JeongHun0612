@@ -14,7 +14,7 @@ namespace DungeonGame
         Zombie,
         Goblin,
 
-        //Dragon,
+        Dragon,
     }
 
     public enum MoveAxis
@@ -61,32 +61,6 @@ namespace DungeonGame
 
             _pos.Row = rndRow;
             _pos.Col = rndCol;
-        }
-
-        private void Temp(Pos playerPos)
-        {
-            int row = _pos.Row;
-            int col = _pos.Col;
-
-            Pos nextPos;
-
-            int diffRow = Math.Abs(playerPos.Row - row);
-            int diffCol = Math.Abs(playerPos.Col - col);
-
-            if (diffRow > diffCol)
-            {
-                if (playerPos.Row > row)
-                    nextPos = new Pos(row + 1, col);
-                else
-                    nextPos = new Pos(row - 1, col);
-            }
-            else
-            {
-                if (playerPos.Col > col)
-                    nextPos = new Pos(row, col + 1);
-                else
-                    nextPos = new Pos(row, col - 1);
-            }
         }
     }
 }

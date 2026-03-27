@@ -17,6 +17,7 @@ namespace DungeonGame
             new EnemyData(EnemyType.Slime, "슬라임", 'S', 1, 4, 2),
             new EnemyData(EnemyType.Zombie, "좀비", 'Z', 2, 6, 2),
             new EnemyData(EnemyType.Goblin, "고블린", 'G', 2, 6, 2),
+            new EnemyData(EnemyType.Dragon, "드래곤", 'D', 3, 10, 2),
         });
 
         private readonly StageTable defaultStageTable = new(rows: new List<StageData>
@@ -31,7 +32,7 @@ namespace DungeonGame
                         spawnEnemyTypes: new List<EnemyType>
                         {
                             EnemyType.Slime,
-                            EnemyType.Zombie
+                            EnemyType.Zombie,
                         }
                     ),
                     new MapData(

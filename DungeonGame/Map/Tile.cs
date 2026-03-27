@@ -12,10 +12,8 @@ namespace DungeonGame
         Floor,
         Wall,
         Door,
+        Key,
         Stair,
-
-        Player,
-        Enemy
     }
 
     internal class Tile
@@ -49,12 +47,10 @@ namespace DungeonGame
                     return '#';
                 case TileType.Door:
                     return 'O';
+                case TileType.Key:
+                    return 'K';
                 case TileType.Stair:
-                    return 'S';
-                case TileType.Player:
-                    return 'P';
-                case TileType.Enemy:
-                    return 'M';
+                    return '>';
             }
 
             return ' ';
@@ -62,7 +58,7 @@ namespace DungeonGame
 
         public bool IsWalkable()
         {
-            return _type == TileType.Floor;
+            return _type == TileType.Floor || _type == TileType.Key;
         }
     }
 }

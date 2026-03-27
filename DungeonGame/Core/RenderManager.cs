@@ -113,6 +113,14 @@ namespace DungeonGame
             return _panels[panelType];
         }
 
+        public void AllClearPanel()
+        {
+            foreach (var panelType in _panels.Keys)
+            {
+                ClearPanel(panelType);
+            }
+        }
+
         public void ClearPanel(PanelType panelType)
         {
             Rect rect = _panels[panelType].GetContentRect();

@@ -36,5 +36,10 @@ namespace DungeonGame.Data
         {
             _rows = rows;
         }
+
+        public EnemyData GetEnemyData(EnemyType type)
+        {
+            return _rows.FirstOrDefault(x => x.Type == type);
+        }
     }
 }

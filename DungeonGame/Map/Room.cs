@@ -18,7 +18,7 @@ namespace DungeonGame
 
     public enum RoomType
     {
-        Normal, Boss
+        Start, Normal, Key, Stair, Boss
     }
 
     public readonly struct RoomGridPos
@@ -57,31 +57,61 @@ namespace DungeonGame
         private readonly Dictionary<Direction, Door> _doorDicts = new Dictionary<Direction, Door>();
 
         private int _roomId;
+        private RoomType _roomType;
         private int _width;
         private int _height;
         private RoomGridPos _gridPos;
 
-        private Tile[,] _tiles;
+        private bool _hasKey;
+        private bool _hasStair;
 
+        private Tile[,] _tiles;
         private List<Enemy> _enemies = new List<Enemy>();
 
         public int RoomId => _roomId;
+        public RoomType RoomType => _roomType;
         public int Width => _width;
         public int Height => _height;
         public RoomGridPos GridPos => _gridPos;
         public int DoorCount => _doorDicts.Count;
         public IReadOnlyList<Enemy> Enemies => _enemies;
 
-        public Room(int id, int width, int height, RoomGridPos gridPos, MapData mapData)
+        public Room(int id, RoomType type, int width, int height, RoomGridPos gridPos, MapData mapData)
         {
             _roomId = id;
+            _roomType = type;
             _width = width;
             _height = height;
             _gridPos = gridPos;
 
             _tiles = new Tile[height, width];
-            CreateRoom(height, width);
-            SpawnEnemies(mapData);
+            CreateBorderWall(height, width);
+            InitializeByRoomType(mapData);
+        }
+
+        private void InitializeByRoomType(MapData mapData)
+        {
+            switch (_roomType)
+            {
+                case RoomType.Normal:
+                    SpawnEnemies(mapData);
+                    break;
+                case RoomType.Key:
+                    CreateKey(GetCenterPos());
+                    break;
+                case RoomType.Stair:
+                    SpawnEnemies(mapData);
+                    CreateStair(GetCenterPos());
+                    break;
+                case RoomType.Boss:
+                    {
+                        Pos centerPos = GetCenterPos();
+                        SpawnBoss(centerPos);
+                        CreateStair(new Pos(2, centerPos.Col));
+                    }
+
+                    break;
+            }
         }
 
         public void SetTile(TileType type, int row, int col)
@@ -152,6 +182,16 @@ namespace DungeonGame
         public bool IsInBound(Pos pos)
         {
             return pos.Row < _height && pos.Col < _width;
+        }
+
+        public void SetRoomType(RoomType roomType, MapData mapData)
+        {
+            _roomType = roomType;
+            _enemies.Clear();
+
+            _hasKey = false;
+            _hasStair = false;
+            InitializeByRoomType(mapData);
         }
 
         public Direction? GetUnconnectedRandomDirection(Random random)
@@ -237,7 +277,7 @@ namespace DungeonGame
                 player.Symbol);
         }
 
-        private void CreateRoom(int row, int col)
+        private void CreateBorderWall(int row, int col)
         {
             // 외각선은 벽으로 할당
             for (int r = 0; r < row; r++)
@@ -256,7 +296,26 @@ namespace DungeonGame
             }
         }
 
-        private void SpawnEnemies(MapData mapData)
+        public void CreateKey(Pos pos)
+        {
+            SetTile(TileType.Key, pos.Row, pos.Col);
+            _hasKey = true;
+        }
+
+        public void CreateStair(Pos pos)
+        {
+            SetTile(TileType.Stair, pos.Row, pos.Col);
+            _hasStair = true;
+        }
+
+        public void SpawnBoss(Pos pos)
+        {
+            Enemy boss = CreateEnemy(EnemyType.Dragon);
+            _enemies.Add(boss);
+            boss.MoveTo(new Pos(pos.Row, pos.Col));
+        }
+
+        public void SpawnEnemies(MapData mapData)
         {
             if (mapData == null)
                 return;
@@ -268,27 +327,44 @@ namespace DungeonGame
 
             int enemyCount = random.Next(mapData.EnemyCountMinInRoom, mapData.EnemyCountMaxInRoom + 1);
 
-            //for (int i = 0; i < enemyCount; i++)
-            //{
-            //    Pos spawnPos = FindEmptyPosition();
-            //    if (!spawnPos.IsValid())
-            //        break;
+            for (int i = 0; i < enemyCount; i++)
+            {
+                EnemyType rndType = mapData.SpawnEnemyTypes[random.Next(mapData.SpawnEnemyTypes.Count)];
+                Enemy spawnEnemy = CreateEnemy(rndType);
 
-            //    EnemyType randomType = mapData.SpawnEnemyTypes[
-            //        _random.Next(mapData.SpawnEnemyTypes.Count)];
+                if (spawnEnemy != null)
+                {
+                    _enemies.Add(spawnEnemy);
+                    spawnEnemy.SetStartPos(this);
+                }
+            }
+        }
 
-            //    Enemy enemy = CreateEnemy(randomType);
-            //    enemy.MoveTo(spawnPos);
-            //}
-    
-            //if (_enemies == null)
-            //    _enemies = new List<Enemy>();
+        private Enemy CreateEnemy(EnemyType type)
+        {
+            var dataManager = GameManager.Instance.DataManager;
+            EnemyData enemyData = dataManager.EnemyTable.GetEnemyData(type);
 
-            //Random rand = new Random();
-            //int rndEnemyCount = rand.Next(2, 5);
-            //EnemyType rndType = (EnemyType)rand.Next(0, Enum.GetValues<EnemyType>().Length);
+            switch (type)
+            {
+                case EnemyType.Slime:
+                    return new Slime(enemyData.Name, enemyData.Demage, enemyData.MaxHp, enemyData.MoveTurn);
+                case EnemyType.Zombie:
+                    return new Zombie(enemyData.Name, enemyData.Demage, enemyData.MaxHp, enemyData.MoveTurn);
+                case EnemyType.Goblin:
+                    return new Goblin(enemyData.Name, enemyData.Demage, enemyData.MaxHp, enemyData.MoveTurn);
+                case EnemyType.Dragon:
+                    return new Dragon(enemyData.Name, enemyData.Demage, enemyData.MaxHp, enemyData.MoveTurn);
+            }
+            return null;
+        }
 
-            //SpawnEnemy(rndType);
+        private Pos GetCenterPos()
+        {
+            int centerRow = _height / 2;
+            int centerCol = _width / 2;
+
+            return new Pos(centerRow, centerCol);
         }
     }
 }

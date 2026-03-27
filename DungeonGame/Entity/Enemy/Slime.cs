@@ -34,9 +34,8 @@ namespace DungeonGame
             if (room.CanMoveTo(nextPos, this))
             {
                 MoveTo(nextPos);
+                _dir *= -1;
             }
-
-            _dir *= -1;
         }
 
         private Pos GetNextPos()
